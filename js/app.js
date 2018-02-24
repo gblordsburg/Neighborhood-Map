@@ -40,21 +40,25 @@ var myViewModel = function() {
 
     self.markers = ko.observableArray([]);
     //Store the filter
-    // inspired by https:/stackoverflow.com/question/20857594/knockout-filtering-on-observable-array
+    // This was learned/inspired by
+    //https:/stackoverflow.com/question/20857594/knockout-filtering-on-observable-array
     //filter array using ko.utils.arrayFilter learned from above url and
     // http://www.knockmeout.net/2011/04/utility-functions-in-knockoutjs.html
-    self.currentFilter = ko.observable(); self.filteredMarkers = ko.computed(function() {
-        if (!self.currentFilter() || self.currentFilter() == 'All') {
-            return self.markers();
-        } else {
-            return ko.utils.arrayFilter(self.markers(), function(marker) {
-                return marker.quadrant == self.currentFilter();
-            });
-        }
-    });
+    self.currentFilter = ko.observable(); self.filteredMarkers =
+        ko.computed(function() {
+            if (!self.currentFilter() || self.currentFilter() == 'All') {
+                return self.markers();
+            } else {
+                return ko.utils.arrayFilter(self.markers(), function(marker) {
+                    return marker.quadrant == self.currentFilter();
+                });
+            }
+        });
 
 
-    this.availableQuadrants = ko.observableArray(['All', 'SW', 'SE', 'NE', 'NW']);
+    this.availableQuadrants = ko.observableArray([
+        'All', 'SW', 'SE', 'NE', 'NW'
+        ]);
 
     // Constructor creates a new map - only center and zoom are required.
     map = new google.maps.Map(document.getElementById('map'), {
@@ -72,6 +76,23 @@ var myViewModel = function() {
     // mouses over the marker.
     var highlightedIcon = makeMarkerIcon('FFA000');
     var clickedIcon = makeMarkerIcon('C6FF00');
+
+    self.attachListenersToMarker = function(marker) {
+        // Create an onclick event to open the large infowindow at each marker.
+        marker.addListener('click', function() {
+            fillInfoWindow(this, largeInfowindow);
+            this.setIcon(clickedIcon);
+            toggleAnimation(this);
+        });
+        // Two event listeners - one for mouseover, one for mouseout,
+        // to change the colors back and forth.
+        marker.addListener('mouseover', function() {
+            this.setIcon(highlightedIcon);
+        });
+        marker.addListener('mouseout', function() {
+            this.setIcon(defaultIcon);
+        });
+    }
     // This section was taken from udacity Fullstack Nanodegree/The Frontend:
     // JavaScript & AJAX/Lesson7/ud864/Project_Code_7_Drawing.html.
     // The following group uses the location array to create an array of
@@ -92,38 +113,25 @@ var myViewModel = function() {
         });
         // Push the marker to our array of markers.
         this.markers.push(marker);
-        // Create an onclick event to open the large infowindow at each marker.
-        marker.addListener('click', function() {
-            fillInfoWindow(this, largeInfowindow);
-            this.setIcon(clickedIcon);
-            toggleAnimation(this);
-        });
+        self.attachListenersToMarker(marker);
         marker.setMap(map);
-        // Two event listeners - one for mouseover, one for mouseout,
-        // to change the colors back and forth.
-        marker.addListener('mouseover', function() {
-            this.setIcon(highlightedIcon);
-        });
-        marker.addListener('mouseout', function() {
-                this.setIcon(defaultIcon);
-        });
     }
     //When a location in the list is clicked an infowindow is created and
     //the marker gets an animation toggled on and off.
     this.listClick = function(clickedItem) {
         fillInfoWindow(clickedItem, largeInfowindow);
         toggleAnimation(this);
-    }
+    };
     //Filter the map markers, then run a function to filter the list
     this.filterClick = function(quadrant) {
         filterLocations(quadrant, self.markers);
         self.setFilter(quadrant);
-    }
+    };
     //Filter the list
     self.setFilter = function(quadrant) {
         quadrant = filterForm.quadrantlist.value;
         self.currentFilter(quadrant);
-    }
+    };
 };
 
 ko.applyBindings(new myViewModel());
@@ -150,6 +158,9 @@ function makeMarkerIcon(markerColor) {
 // one infowindow is allowed which will open at the marker that is clicked,
 // and populate based on that markers position.
 function fillInfoWindow(marker, infowindow) {
+    var markerTitle,
+        markerInfo,
+        markerLink;
     // Check to make sure the infowindow is not already opened on this marker.
     if (infowindow.marker != marker) {
         // Clear the infowindow content to give the streetview time to load.
@@ -180,17 +191,17 @@ function fillInfoWindow(marker, infowindow) {
                     var markerInfo = response[2][0];
                     var markerLink = response[3][0];
                 } else {
-                    var markerTitle = response[1];
-                    var markerInfo = response[2];
-                    var markerLink = response[3];
+                    markerTitle = response[1];
+                    markerInfo = response[2];
+                    markerLink = response[3];
                 }
                 infowindow.setContent(
-                    '<div class="infowindow"><div class="marker_name"><span>'
-                    + markerTitle +
+                    '<div class="infowindow"><div class="marker_name"><span>' +
+                    markerTitle +
                     '<span></br></div><div class="marker_info"><span>' +
                     markerInfo +
-                    '<span></br></div><div class="marker_link"><span><a href="'
-                     + markerLink + '">Wikipedia</a><span></br></div></div>');
+                    '<span></br></div><div class="marker_link"><span><a href="' +
+                    markerLink + '">Wikipedia</a><span></br></div></div>');
 
                 // Open the infowindow on the correct marker.
                 infowindow.open(map, marker);
