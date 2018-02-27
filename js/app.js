@@ -187,21 +187,22 @@ function fillInfoWindow(marker, infowindow) {
                 //The data recieved from wikipedia differs from the rest,
                 //so it had to be handled.
                 if (marker.title == 'Rogue Ales') {
-                    var markerTitle = response[1][0];
-                    var markerInfo = response[2][0];
-                    var markerLink = response[3][0];
+                    this.markerTitle = response[1][0];
+                    this.markerInfo = response[2][0];
+                    this.markerLink = response[3][0];
                 } else {
                    this.markerTitle = response[1];
-                    markerInfo = response[2];
-                    markerLink = response[3];
+                    this.markerInfo = response[2];
+                    this.markerLink = response[3];
                 }
                 infowindow.setContent(
                     '<div class="infowindow"><div class="marker_name"><span>' +
-                    markerTitle +
+                    this.markerTitle +
                     '<span></br></div><div class="marker_info"><span>' +
-                    markerInfo +
+                    this.markerInfo +
                     '<span></br></div><div class="marker_link"><span><a href="' +
-                    markerLink + '">Wikipedia</a><span></br></div></div>');
+                    this.markerLink + '">Wikipedia</a><span></br></div></div>'
+                    );
 
                 // Open the infowindow on the correct marker.
                 infowindow.open(map, marker);
