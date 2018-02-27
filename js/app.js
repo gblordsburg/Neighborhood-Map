@@ -92,7 +92,7 @@ var myViewModel = function() {
         marker.addListener('mouseout', function() {
             this.setIcon(defaultIcon);
         });
-    }
+    };
     // This section was taken from udacity Fullstack Nanodegree/The Frontend:
     // JavaScript & AJAX/Lesson7/ud864/Project_Code_7_Drawing.html.
     // The following group uses the location array to create an array of
@@ -191,7 +191,7 @@ function fillInfoWindow(marker, infowindow) {
                     var markerInfo = response[2][0];
                     var markerLink = response[3][0];
                 } else {
-                    markerTitle = response[1];
+                   this.markerTitle = response[1];
                     markerInfo = response[2];
                     markerLink = response[3];
                 }
